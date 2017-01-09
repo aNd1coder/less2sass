@@ -14,6 +14,7 @@ Less2Sass.prototype.convert = function(file) {
       .convertMixins()
       .includeMixins()
       .convertColourHelpers()
+      .convertPrefix()
       .convertFileExtensions();
 
   return this.file;
@@ -28,9 +29,11 @@ Less2Sass.prototype.includeMixins = function() {
 };
 
 Less2Sass.prototype.convertMixins = function() {
-  var mixinRegex = /^(\s*?)\.([\w\-]*?)\s*\(([\s\S][^\)]+?)\)+\s*\{$/gm;
+  var mixinRegex = /^(\s*?)\.([\w\-]*?)\s*\(([\s\S][^\)]+?)*?\)+\s*\{$/gm;
 
-  this.file = this.file.replace(mixinRegex, '$1@mixin $2($3) {');
+  this.file = this.file.replace(mixinRegex, function($0, $1, $2, $3){
+    return $1 + '@mixin ' + $2 + '('+ $3.replace(/;/g, ',') + ') {'
+  })
 
   return this;
 };
@@ -66,6 +69,14 @@ Less2Sass.prototype.convertVariables = function() {
   var atRegex = /@(?!(media|import|mixin|font-face|keyframes)(\s|\())/g;
 
   this.file = this.file.replace(atRegex, '$');
+
+  return this;
+};
+
+Less2Sass.prototype.convertPrefix = function() {
+  var extensionRegex = /ant-/gi;
+
+  this.file = this.file.replace(extensionRegex, 'mant-');
 
   return this;
 };
